@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "citeproc": "^2.4.62",
+    "citeproc-js-node": "^0.0.3",
+    "fs": "^0.0.1-security"
+  }
+}
