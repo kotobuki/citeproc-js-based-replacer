@@ -67,8 +67,22 @@ function replaceCitations(obj) {
   } else if (typeof obj === "object" && obj !== null) {
     if (obj.t === "Cite") {
       return {
-        t: "Str",
-        c: formattedCitations.shift(),
+        t: "RawInline",
+        c: [
+          "markdown",
+          formattedCitations
+            .shift()
+            .trim()
+            .replace(/<i>/g, "*")
+            .replace(/<\/i>/g, "*")
+            .replace(/<div class="csl-entry">/g, "")
+            .replace(/<\/div>/g, "")
+            .replace(/&ndash;/g, "--")
+            .replace(/&mdash;/g, "---")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">"),
+        ],
       };
     } else {
       return Object.fromEntries(
@@ -165,7 +179,7 @@ process.stdin.on("end", () => {
   };
 
   citeprocEngine = new citeproc.CSL.Engine(sys, style);
-  citeprocEngine.setOutputFormat("text");
+  citeprocEngine.setOutputFormat("html");
 
   const citableItemIds = bibliography.map((item) => item.id);
   debugLog(`citableItemIds: ${JSON.stringify(citableItemIds)}`);
@@ -213,7 +227,6 @@ process.stdin.on("end", () => {
   );
 
   if (bibliographyHeaderIndex >= 0) {
-    citeprocEngine.setOutputFormat("html");
     const bibResult = citeprocEngine.makeBibliography();
     const pandocBibResult = convertBibResultToPandoc(bibResult);
     dataObj.blocks.splice(bibliographyHeaderIndex + 1, 0, ...pandocBibResult);
