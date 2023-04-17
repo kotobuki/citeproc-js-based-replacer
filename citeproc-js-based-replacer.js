@@ -33,9 +33,23 @@ function collectCitations(obj) {
       const citationId = obj.c[0][0].citationId;
       const noteIndex = citationKeys.length;
       citationKeys.push(citationId);
+
+      const citationSuffix = obj.c[0][0].citationSuffix;
+
+      let locator = "";
+      if (citationSuffix.length > 0) {
+        const suffixes = citationSuffix.map((suffix) => suffix.c);
+        locator = suffixes.join("|");
+      }
+
+      const citationItem = { id: citationId };
+      if (locator) {
+        citationItem.locator = locator;
+      }
+
       citationObjects.push({
         citationID: `${citationId}_${noteIndex}`,
-        citationItems: [{ id: citationId }],
+        citationItems: [citationItem],
         properties: { noteIndex: noteIndex },
       });
 
