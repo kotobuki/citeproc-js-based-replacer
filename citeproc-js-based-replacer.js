@@ -30,28 +30,32 @@ function collectCitations(obj) {
     return obj.map(collectCitations);
   } else if (typeof obj === "object" && obj !== null) {
     if (obj.t === "Cite") {
-      const citationId = obj.c[0][0].citationId;
-      const noteIndex = citationKeys.length;
-      citationKeys.push(citationId);
+      for (const item of obj.c[0]) {
+        const citationId = item.citationId;
+        const noteIndex = citationKeys.length;
+        citationKeys.push(citationId);
 
-      const citationSuffix = obj.c[0][0].citationSuffix;
+        const citationSuffix = item.citationSuffix;
 
-      let locator = "";
-      if (citationSuffix.length > 0) {
-        const suffixes = citationSuffix.map((suffix) => suffix.c);
-        locator = suffixes.join("|");
+        let locator = "";
+        if (citationSuffix.length > 0) {
+          const suffixes = citationSuffix
+            .filter((suffix) => suffix.t === "Str")
+            .map((suffix) => suffix.c.replace(/^\[\s*|\s*\]$/g, ""));
+          locator = suffixes.join("|");
+        }
+
+        const citationItem = { id: citationId };
+        if (locator) {
+          citationItem.locator = locator;
+        }
+
+        citationObjects.push({
+          citationID: `${citationId}_${noteIndex}`,
+          citationItems: [citationItem],
+          properties: { noteIndex: noteIndex },
+        });
       }
-
-      const citationItem = { id: citationId };
-      if (locator) {
-        citationItem.locator = locator;
-      }
-
-      citationObjects.push({
-        citationID: `${citationId}_${noteIndex}`,
-        citationItems: [citationItem],
-        properties: { noteIndex: noteIndex },
-      });
 
       return;
     } else {
@@ -80,23 +84,28 @@ function replaceCitations(obj) {
     return obj.map(replaceCitations);
   } else if (typeof obj === "object" && obj !== null) {
     if (obj.t === "Cite") {
+      const formattedItems = obj.c[0].map(() => {
+        const formattedCitation = formattedCitations
+          .shift()
+          .trim()
+          .replace(/<i>/g, "*")
+          .replace(/<\/i>/g, "*")
+          .replace(/<div class="csl-entry">/g, "")
+          .replace(/<\/div>/g, "")
+          .replace(/&ndash;/g, "--")
+          .replace(/&mdash;/g, "---")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">");
+
+        return formattedCitation;
+      });
+
+      const concatenatedFormattedItems = formattedItems.join("; ");
+
       return {
         t: "RawInline",
-        c: [
-          "markdown",
-          formattedCitations
-            .shift()
-            .trim()
-            .replace(/<i>/g, "*")
-            .replace(/<\/i>/g, "*")
-            .replace(/<div class="csl-entry">/g, "")
-            .replace(/<\/div>/g, "")
-            .replace(/&ndash;/g, "--")
-            .replace(/&mdash;/g, "---")
-            .replace(/&amp;/g, "&")
-            .replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">"),
-        ],
+        c: ["markdown", concatenatedFormattedItems],
       };
     } else {
       return Object.fromEntries(
