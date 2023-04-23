@@ -96,7 +96,8 @@ function replaceCitations(obj) {
           .replace(/&mdash;/g, "---")
           .replace(/&amp;/g, "&")
           .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">");
+          .replace(/&gt;/g, ">")
+          .replace(/”/g, "”\\");
 
         return formattedCitation;
       });
@@ -140,7 +141,8 @@ function convertBibResultToPandoc(bibResult) {
       .replace(/&mdash;/g, "---")
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">");
+      .replace(/&gt;/g, ">")
+      .replace(/”/g, "”\\");
 
     return {
       t: "Para",
