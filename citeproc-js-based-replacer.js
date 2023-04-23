@@ -194,7 +194,15 @@ process.stdin.on("end", () => {
 
   const sys = {
     retrieveItem: function (itemID) {
-      return bibliography.find((entry) => entry.id === itemID);
+      const foundItem = bibliography.find((entry) => entry.id === itemID);
+
+      if (!foundItem) {
+        throw new Error(
+          `Item with ID "${itemID}" not found in the bibliography.`
+        );
+      }
+
+      return foundItem;
     },
     retrieveLocale: function (lang) {
       return locales[lang];
